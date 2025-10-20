@@ -9,7 +9,8 @@
     "test": "jest",
     "eslint": "eslint './**/*.{js,jsx}'",
     "build": "webpack --mode production",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "vercel-build": "npm run build"
   },
   "repository": {
     "type": "git",
