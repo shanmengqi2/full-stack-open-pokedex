@@ -22,5 +22,13 @@
       "src": "/(.*)",
       "dest": "/index.html"
     }
-  ]
+  ],
+  "git": {
+    "deploymentEnabled": {
+      "main": true
+    }
+  },
+  "github": {
+    "silent": true
+  }
 }
