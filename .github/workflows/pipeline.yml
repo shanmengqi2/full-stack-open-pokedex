@@ -61,28 +61,31 @@ jobs:
           echo "Build verification successful"
       - name: Build Success Notification
         uses: rjstone/discord-webhook-notify@v2
-        if: ${{ success() }}
+        if: success()
         with:
           webhookUrl: ${{ secrets.DISCORD_WEBHOOK }}
+          severity: info
           text: A new version of Pokedex deployed
           description: "to https://full-stack-open-pokedex-teal.vercel.app/ by shanmengqi2"
-          severity: info
-          details: "Severity: Informational · Today at ${{ github.event.head_commit.timestamp }}"
+          footer: "Severity: Informational"
       - name: Build Failure Notification
         uses: rjstone/discord-webhook-notify@v2
-        if: ${{ failure() }}
+        if: failure()
         with:
           webhookUrl: ${{ secrets.DISCORD_WEBHOOK }}
-          text: Build failed
-          description: "commit ${{ github.event.head_commit.url }} by shanmengqi2 broke the build :("
           severity: error
-          details: "Severity: Error · Today at ${{ github.event.head_commit.timestamp }}"
+          text: Build failed
+          description: "commit ${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }} by shanmengqi2 broke the build :("
+          footer: "Severity: Error"
 
   tag_release:
     needs: [check_skip, simple_deployment_pipeline]
     runs-on: ubuntu-latest
     if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' && needs.check_skip.outputs.should_skip != 'true' }}
     steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - name: Bump version and push tag
         uses: anothrNick/github-tag-action@1.75.0
         env:
