@@ -12,6 +12,23 @@ on:
       - synchronize
 
 jobs:
+  check_skip:
+    runs-on: ubuntu-latest
+    outputs:
+      should_skip: ${{ steps.check.outputs.should_skip }}
+    steps:
+      - name: Check for #skip in commits
+        id: check
+        run: |
+          COMMITS='${{ toJson(github.event.commits) }}'
+          if echo "$COMMITS" | grep -q "#skip"; then
+            echo "should_skip=true" >> $GITHUB_OUTPUT
+            echo "Found #skip in commit messages, will skip deployment"
+          else
+            echo "should_skip=false" >> $GITHUB_OUTPUT
+            echo "No #skip found, will proceed with deployment"
+          fi
+
   simple_deployment_pipeline:
     runs-on: ubuntu-latest
     steps:
@@ -42,8 +59,12 @@ jobs:
             exit 1
           fi
           echo "Build verification successful"
+  tag_release:
+    needs: [check_skip, simple_deployment_pipeline]
+    runs-on: ubuntu-latest
+    if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' && needs.check_skip.outputs.should_skip != 'true' }}
+    steps:
       - name: Bump version and push tag
-        if: ${{ github.event_name == 'push' }}
         uses: anothrNick/github-tag-action@1.75.0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
