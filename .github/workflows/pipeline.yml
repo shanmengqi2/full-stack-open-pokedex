@@ -59,6 +59,25 @@ jobs:
             exit 1
           fi
           echo "Build verification successful"
+      - name: Build Success Notification
+        uses: rjstone/discord-webhook-notify@v2
+        if: ${{ success() }}
+        with:
+          webhookUrl: ${{ secrets.DISCORD_WEBHOOK }}
+          text: A new version of Pokedex deployed
+          description: "to https://full-stack-open-pokedex-teal.vercel.app/ by shanmengqi2"
+          severity: info
+          details: "Severity: Informational · Today at ${{ github.event.head_commit.timestamp }}"
+      - name: Build Failure Notification
+        uses: rjstone/discord-webhook-notify@v2
+        if: ${{ failure() }}
+        with:
+          webhookUrl: ${{ secrets.DISCORD_WEBHOOK }}
+          text: Build failed
+          description: "commit ${{ github.event.head_commit.url }} by shanmengqi2 broke the build :("
+          severity: error
+          details: "Severity: Error · Today at ${{ github.event.head_commit.timestamp }}"
+
   tag_release:
     needs: [check_skip, simple_deployment_pipeline]
     runs-on: ubuntu-latest
